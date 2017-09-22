@@ -6,7 +6,7 @@ import patch
 
 class GeosConan(ConanFile):
     name = "Geos"
-    version = "3.4.2"
+    version = "3.4.3"
     settings = "os", "compiler", "build_type", "arch"
     folder = "geos-%s" % version
     generators = "cmake"
@@ -18,14 +18,17 @@ class GeosConan(ConanFile):
     exports = "geos-%s.patch" % version
 
     def source(self):
-        zip_name = "geos-%s.tar.bz2" % version
+        zip_name = "geos-%s.tar.bz2" % self.version
         download("http://download.osgeo.org/geos/%s" % zip_name, zip_name)
         unzip(zip_name)
         os.unlink(zip_name)
         if self.settings.os != "Windows":
             self.run("chmod +x ./%s/configure" % self.folder)
-        pset = patch.fromfile("geos-%s.patch" % self.version)
-        pset.apply()
+
+        for p in self.exports:
+            if os.path.exists(p):
+                pset = patch.fromfile(p)
+                pset.apply()
 			
     def build(self):
         cmake = CMake(self.settings)
